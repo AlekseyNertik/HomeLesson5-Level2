@@ -1,0 +1,55 @@
+import java.util.Arrays;
+
+public class Main {
+
+public static void main(String[] args) {
+
+    final int size = 10000000;
+    final int h = size / 2;
+    float[] arr = new float[size];
+
+    long a = System.currentTimeMillis(); //засекаю время заполнения массива филом
+    Arrays.fill(arr, 1f); //заполняю массив
+    System.out.println("Время заполнения массива Arrays.fill: "+(System.currentTimeMillis() - a));
+
+    a = System.currentTimeMillis(); //засекаю время заполнения массива циклом
+    for (int i=1; i< arr.length; i++) arr[i]=1; //заполняю массив
+    System.out.println("Время заполнения массива циклом: "+(System.currentTimeMillis() - a));
+
+    a = System.currentTimeMillis(); //засекаю время расчета в один поток
+    for (int i=1; i< arr.length; i++) {
+        arr[i] = (float) (arr[i] * Math.sin(0.2f+i/5) * Math.cos(0.2f+i/5) * Math.cos(0.4f+i/2));
+    }
+    System.out.println("Время в один поток: "+(System.currentTimeMillis() - a));
+
+    a = System.currentTimeMillis(); //засекаю время расчета в два потока
+    // разделяю массив на 2
+    float[] arr1 = Arrays.copyOfRange(arr, 0, h); //массив для 1 потока
+    float[] arr2 = Arrays.copyOfRange(arr, h+1, arr.length); //массив для 2 потока
+
+    Thread t1 = new Thread(() -> {
+        for (int i = 0; i < arr1.length; i++) {
+            arr1[i] = (float) (arr1[i] * Math.sin(0.2f+i/5) * Math.cos(0.2f+i/5) * Math.cos(0.4f+i/2));
+        }
+    });
+    Thread t2 = new Thread(() -> {
+        for (int i = 0; i < arr1.length-1; i++) {
+            arr2[i] = (float) (arr2[i] * Math.sin(0.2f+i/5) * Math.cos(0.2f+i/5) * Math.cos(0.4f+i/2));
+        }
+    });
+
+    t1.start(); //старт 1 потока
+    t2.start(); //старт 2 потока
+
+        try { //Жду окончания расчета всех потоков
+            t1.join();
+            t2.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    System.arraycopy(arr1, 0, arr, 0, arr1.length); //сливаю в массив результат 1 потока
+    System.arraycopy(arr2, 0, arr, arr1.length, arr2.length); //сливаю в массив результат 2 потока
+    System.out.println("Время в два потока: "+(System.currentTimeMillis() - a));
+    }
+}
