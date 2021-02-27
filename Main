@@ -48,8 +48,8 @@ public static void main(String[] args) {
             e.printStackTrace();
         }
 
-    System.arraycopy(arr1, 0, arr, 0, arr1.length); //сливаю в массив результат 1 потока
-    System.arraycopy(arr2, 0, arr, arr1.length, arr2.length); //сливаю в массив результат 2 потока
+    System.arraycopy(arr1, 0, arr, 0, arr1.length); //сливаю в основной массив результат 1 потока
+    System.arraycopy(arr2, 0, arr, arr1.length, arr2.length); //сливаю в основной массив результат 2 потока
     System.out.println("Время в два потока: "+(System.currentTimeMillis() - a));
     }
 }
